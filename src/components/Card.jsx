@@ -1,61 +1,78 @@
 import { Link } from "react-router-dom";
-import { useContacts } from "../context/ContactContext"; // Asegúrate de que esta ruta esté bien
+import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 
-function Card({ contacto }) {
-  const { removeContact } = useContacts();
+export const Card = ({ contact }) => {
 
-  const handleDelete = async () => {
-    const confirmDelete = window.confirm("¿Estás seguro de eliminar este contacto?");
-    if (!confirmDelete) return;
+    const { dispatch } = useGlobalReducer();
 
-    try {
-      await removeContact(contacto.id); // Llama a la función del contexto
-    } catch (error) {
-      console.error("Error eliminando contacto:", error.message);
-    }
-  };
+    const deleteContact = async () => {
+        try {
+            const response = await fetch(`https://playground.4geeks.com/contact/agendas/alba2308/contacts/${contact.id}`,
 
-  return (
-    <div className="card shadow-sm w-75 mx-3 my-2">
-      <div className="row g-0 align-items-center">
-        <div className="col-md-2 text-center">
-          <img
-            src="https://xsgames.co/randomusers/avatar.php?g=male"
-            alt={contacto.name}
-            className="img-fluid rounded-circle m-3"
-            style={{ width: "100px", height: "100px", objectFit: "cover" }}
-          />
+                {
+                    method: "DELETE"
+
+                }
+
+            );
+            if (!response.ok) {
+                throw new Error("No se pudo borrar el contacto");
+
+            }
+            dispatch({
+                type: "delete_contact",
+                payload: contact.id
+            });
+        } catch (error) {
+            console.error("Hubo un problema al borrar el contacto", error);
+            alert("No se pudo borrar el contacto");
+        }
+    };
+
+    return (
+        <div className="card mb-3 shadow-sm">
+            <div className="row g-0 align-items-center">
+
+                <div className="col-md-2 text-center p-3">
+                    <img
+                        src="https://static.vecteezy.com/system/resources/previews/014/194/232/non_2x/avatar-icon-human-a-person-s-badge-social-media-profile-symbol-the-symbol-of-a-person-vector.jpg"
+                        className="img-fluid rounded-circle"
+                        alt="contact"
+                    />
+                </div>
+
+                <div className="col-md-8">
+                    <div className="card-body">
+                        <h5 className="card-title mb-2">{contact.name}</h5>
+                        <p className="card-text mb-1">
+                            <i className="fa-solid fa-location-dot me-2"></i>
+                            {contact.address}
+                        </p>
+                        <p className="card-text mb-1">
+                            <i className="fa-solid fa-phone me-2"></i>
+                            {contact.phone}
+                        </p>
+                        <p className="card-text mb-0">
+                            <i className="fa-solid fa-envelope me-2"></i>
+                            {contact.email}
+                        </p>
+                    </div>
+                </div>
+
+                <div className="col-md-2 d-flex justify-content-center align-items-center gap-2 p-3">
+                    <Link to={`/editcontact/${contact.id}`}
+                    className="text-dark"
+                    >
+                        <i className="fa-solid fa-pencil"></i>
+                    </Link>
+
+                    <button className="btn btn-link text-dark" onClick={deleteContact}>
+                        <i className="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+
+            </div>
         </div>
-        <div className="col-md-8">
-          <div className="card-body">
-            <h5 className="card-title mb-1">{contacto.name}</h5>
-            <p className="mb-1">
-              <i className="fas fa-map-marker-alt me-2"></i>
-              {contacto.address}
-            </p>
-            <p className="mb-1">
-              <i className="fas fa-phone-alt me-2"></i>
-              {contacto.phone}
-            </p>
-            <p className="mb-0">
-              <i className="fas fa-envelope me-2"></i>
-              {contacto.email}
-            </p>
-          </div>
-        </div>
-        <div className="col-md-2 text-end pe-3">
-          <Link to="/demo">
-            <button className="btn btn-link text-dark me-2">
-              <i className="fas fa-edit"></i>
-            </button>
-          </Link>
-          <button className="btn btn-link text-danger" onClick={handleDelete}>
-            <i className="fas fa-trash"></i>
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+    )
+
 }
-
-export default Card;
